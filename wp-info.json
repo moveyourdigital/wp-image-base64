@@ -1,0 +1,22 @@
+{
+  "name": "Image Base64",
+  "version": "0.1.0",
+  "author": "<a href='https://github.com/moveyourdigital'>Move Your Digital</a>",
+  "author_profile": "https://github.com/moveyourdigital",
+  "homepage": "https://github.com/moveyourdigital/wp-image-base64",
+  "download_link": "https://github.com/moveyourdigital/wp-image-base64/archive/refs/heads/main.zip",
+  "support_url": "https://github.com/moveyourdigital/wp-image-base64/issues",
+  "requires": "5.8",
+  "tested": "6.7.1",
+  "requires_php": "7.4",
+  "last_updated": "2024-11-19 16:45:00",
+  "sections": {
+    "description": "Generate base64 encode versions of images.",
+    "installation": "Click the <i>activate</i> button.",
+    "changelog": "<h4>0.1.0</h4><ol><li>Initial.</li></ol>"
+  },
+  "banners": {
+    "low": "https://github.com/moveyourdigital/wp-image-base64/raw/main/.wordpress-org/banner-772x250.jpeg",
+    "high": "https://github.com/moveyourdigital/wp-image-base64/raw/main/.wordpress-org/banner-1544x500.jpeg"
+  }
+}

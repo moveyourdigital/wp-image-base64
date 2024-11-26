@@ -6,7 +6,7 @@ Generate base64 encode versions of images
 **Requires at least:** 6.7.1\
 **Tested up to:** 6.7.1\
 **Requires PHP:** 7.4\
-**Stable tag:** 0.1.0\
+**Stable tag:** 0.2.1\
 **License:** GPLv2 or later\
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,3 +18,4 @@ This section describes how to install the plugin and get it working.
 1. Activate the plugin `Image base64` through the 'Plugins' menu in WordPress
 1. It will start a cron job that will generate base64 versions for existing media
 1. Use `wp_get_attachment_metadata`, each size has a `base64` key in `sizes` property.
+1. You can also use `wp_get_attachment_image_base64` instead.

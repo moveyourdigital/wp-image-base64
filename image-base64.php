@@ -3,7 +3,7 @@
  * Plugin Name:     Image Base64
  * Plugin URI:      https://gist.github.com/lightningspirit/bb51e110d92821b724ab53bf2e07cb87
  * Description:     Generate base64 encode versions of images
- * Version:         0.1.0
+ * Version:         0.2.1
  * Requires:        PHP: 7.4
  * Author:          Move Your Digital, Inc.
  * Author URI:      https://moveyourdigital.com
@@ -138,6 +138,15 @@ function plugin_update_uri() {
 }
 
 /**
+ * Gets the action hook for first process
+ *
+ * @return string
+ */
+function hook_process_old_media() {
+	return 'image-base64_hook_process_media';
+}
+
+/**
  * Load plugin translations and post type
  *
  * @since 0.1.0
@@ -154,6 +163,7 @@ add_action(
 		}
 
 		include __DIR__ . '/inc/class-image-manipulation.php';
+		include __DIR__ . '/inc/functions.php';
 		include __DIR__ . '/inc/hooks.php';
 		include __DIR__ . '/inc/updater.php';
 	}
@@ -167,6 +177,24 @@ add_action(
 register_activation_hook(
 	__FILE__,
 	function () {
-		// @TODO
+		if ( ! wp_next_scheduled( hook_process_old_media() ) ) {
+			wp_schedule_single_event( time(), hook_process_old_media() );
+		}
+	}
+);
+
+/**
+ * Remove cron hook on deactivation
+ *
+ * @since 0.1.0
+ */
+register_deactivation_hook(
+	__FILE__,
+	function () {
+		$timestamp = wp_next_scheduled( hook_process_old_media() );
+
+		if ( $timestamp ) {
+			wp_unschedule_event( $timestamp, hook_process_old_media() );
+		}
 	}
 );

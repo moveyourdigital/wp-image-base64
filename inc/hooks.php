@@ -24,6 +24,7 @@ namespace Image_Base64;
 /**#& hooks */
 add_filter( 'wp_generate_attachment_metadata', __NAMESPACE__ . '\\process_images', 100, 2 );
 add_filter( 'wp_update_attachment_metadata', __NAMESPACE__ . '\\process_images', 100, 2 );
+add_action( hook_process_old_media(), __NAMESPACE__ . '\\process_old_media' );
 
 /**
  * PHP opens and outputs images using different functions.
@@ -50,7 +51,7 @@ function parse_sizes_from_metadata( $metadata ): array {
 	$file_dir = dirname( $file );
 
 	$sizes = array(
-	// 'full' => $metadata['file'], something not completely ok.
+		'full' => $metadata['file'],
 	);
 	foreach ( $metadata['sizes'] as $size => $size_data ) {
 		if ( 'full' !== $size ) {
@@ -75,12 +76,14 @@ function parse_sizes_from_metadata( $metadata ): array {
  * @return array
  */
 function generate_base64( $create, $output, $basedir, $path, $id, $size, $mimetype ) {
+	// phpcs:ignore
 	$image = @$create( "$basedir/$path" );
 
 	if ( ! $image ) {
 		// phpcs:ignore
 		$url = wp_get_attachment_image_url( $id, $size ) ?: null;
 		if ( $url ) {
+			// phpcs:ignore
 			$image = @$create( $url );
 		}
 	}
@@ -149,4 +152,64 @@ function process_images( $metadata, $id ) {
 	}
 
 	return $metadata;
+}
+
+/**
+ * Get an array of images that do not have base64 generated
+ *
+ * @return \WP_Post[]
+ */
+function get_images_without_base64() {
+	$allowed_media = array( 'image/jpeg', 'image/gif', 'image/png', 'image/webp' );
+
+	$images = get_posts(
+		array(
+			'post_type'      => 'attachment',
+			'post_mime_type' => $allowed_media,
+			'post_status'    => 'inherit',
+			// phpcs:ignore
+			// 'meta_key'       => '_wp_attachment_metadata',
+			// // phpcs:ignore
+			// 'meta_value'     => '%"base64"%',
+			// 'meta_compare'   => 'NOT LIKE',
+			'posts_per_page' => 10,
+		)
+	);
+
+	return $images;
+}
+
+/**
+ * Process all media that is missing a base64 field
+ */
+function process_media_without_base64() {
+	// phpcs:ignore
+	$max_execution_time = ini_get( 'max_execution_time' ) ?: 30;
+	$start_time         = microtime( true );
+	$elapsed_time       = 0;
+	$images             = array();
+	$num_images         = 0;
+
+	do {
+		$images     = get_images_without_base64();
+		$num_images = count( $images );
+
+		foreach ( $images as $image ) {
+			$attachment_id = $image->ID;
+
+			$image_meta = wp_get_attachment_metadata( $attachment_id );
+
+			/** This filter is documented in wp-admin/includes/image.php */
+			$image_meta = apply_filters( 'wp_generate_attachment_metadata', $image_meta, $attachment_id, 'update' );
+
+			// Save the updated metadata.
+			wp_update_attachment_metadata( $attachment_id, $image_meta );
+
+			$elapsed_time = microtime( true ) - $start_time;
+
+			if ( $elapsed_time >= $max_execution_time * 0.9 ) {
+				wp_schedule_single_event( time() + 5, hook_process_old_media() );
+			}
+		}
+	} while ( $num_images > 0 );
 }

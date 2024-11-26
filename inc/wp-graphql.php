@@ -31,17 +31,10 @@ add_action(
 			'MediaSize',
 			array(
 				'base64' => array(
-					'description' => __( 'Base64 of data URI for a blur version', 'contasconnosco' ),
+					'description' => __( 'Base64 of data URI for a blur version', 'image-base64' ),
 					'type'        => 'string',
 					'resolve'     => function ( array $image ) {
-						$blur_data = isset( $image['base64'] ) ? $image['base64'] : null;
-
-						if ( ! $blur_data ) {
-							// Legacy keys!
-							$blur_data = isset( $image['blurDataURL'] ) ? $image['blurDataURL'] : null;
-						}
-
-						return $blur_data;
+						return isset( $image['base64'] ) ? $image['base64'] : null;
 					},
 				),
 			),
@@ -51,16 +44,16 @@ add_action(
 			'MediaItem',
 			array(
 				'base64' => array(
-					'description' => __( 'Base64 of data URI for a blur version', 'contasconnosco' ),
+					'description' => __( 'Base64 of data URI for a blur version', 'image-base64' ),
 					'type'        => 'string',
 					'args'        => array(
 						'size' => array(
 							'type'        => 'MediaItemSizeEnum',
-							'description' => __( 'Size of the MediaItem to calculate base64 with', 'contasconnosco' ),
+							'description' => __( 'Size of the MediaItem to calculate base64 with', 'image-base64' ),
 						),
 					),
 					'resolve'     => function ( $post, $args ) {
-						$size = 'medium';
+						$size = 'thumbnail';
 
 						if ( ! empty( $args['size'] ) ) {
 							$size = $args['size'];
@@ -70,15 +63,7 @@ add_action(
 							$size = 'thumbnail';
 						}
 
-						$metadata = wp_get_attachment_metadata( $post->ID );
-						$blur_data = isset( $metadata['sizes'][ $size ]['base64'] ) ? $metadata['sizes'][ $size ]['base64'] : null;
-
-						if ( ! $blur_data ) {
-							// Legacy keys!
-							$blur_data = isset( $metadata['sizes'][ $size ]['blurDataURL'] ) ? $metadata['sizes'][ $size ]['blurDataURL'] : null;
-						}
-
-						return $blur_data;
+						return wp_get_attachment_image_base64( $post->ID, $size );
 					},
 				),
 			),

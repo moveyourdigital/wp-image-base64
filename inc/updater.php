@@ -5,7 +5,7 @@
  * @package tailwind-css
  */
 
-namespace Tailwind_CSS;
+namespace Image_Base64;
 
 /**
  * Fetch and return plugin data from declared remote
